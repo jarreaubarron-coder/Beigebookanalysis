@@ -2,6 +2,8 @@
 
 We use several off-the-shelf text sentiment analysis tools to analyze the sentiment of the Fed's Beige Book reports from 1970--2020.
 
+**Live dashboard: <https://jarreaubarron-coder.github.io/Beigebookanalysis/>** (does Beige Book sentiment predict the next fed funds decision?)
+
 The raw text data is scraped from the [Minneapolis Fed](https://www.minneapolisfed.org/region-and-community/regional-economic-indicators/beige-book-archive) by `scrape.py` and stored in `txt`. Do whatever you want with this data (I clearly do not own the copyright).
 
 The reports are scored in `sentiment.py` using three pre-trained models. I am in the process of adding more. So far the models used are
@@ -89,6 +91,8 @@ target, so pre-1983 data is only used for the descriptive plot and for warm-up o
 of the target range is used. Only ~100 non-hold decisions exist, so treat all results as suggestive.
 
 ## Interactive dashboard
+
+Live at <https://jarreaubarron-coder.github.io/Beigebookanalysis/>.
 
 `dashboard/` holds the source of an interactive dashboard that summarises the findings above (period, scorer and model pickers; timeline, scatter, model scores, forecast and bootstrap-gain charts).
 
