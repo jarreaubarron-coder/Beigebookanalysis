@@ -9,3 +9,6 @@ textblob
 flair
 transformers
 statsmodels
+scikit-learn
+scipy
+pysentiment2
