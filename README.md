@@ -88,6 +88,18 @@ Caveats: the FOMC only announced its target from Feb 1994 (earlier values are th
 target, so pre-1983 data is only used for the descriptive plot and for warm-up of the rolling normalisation. After Dec 2008 the upper bound
 of the target range is used. Only ~100 non-hold decisions exist, so treat all results as suggestive.
 
+## Interactive dashboard
+
+`dashboard/` holds the source of an interactive dashboard that summarises the findings above (period, scorer and model pickers; timeline, scatter, model scores, forecast and bootstrap-gain charts).
+
+```
+python3 dashboard/build_data.py dashboard/data   # after predict.py: JSON data files from out/csv/
+```
+
+`dashboard/index.html` is the page. It was published as a Claude Artifact of the Data type, which reads the five JSON files as datasets
+(`releases`, `predictions`, `period_scores`, `gains`, `scorers`). The sub-period scores, bootstrap intervals and correlations are computed in
+`build_data.py`, so the page only displays them. The published copy is a snapshot: re-run the build and re-upload the files to refresh it.
+
 ## Dependencies
 
 Dependencies are listed in `requirements.txt`. Tested + Developed on Python 3.8.

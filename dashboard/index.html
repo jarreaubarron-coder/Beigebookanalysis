@@ -1,0 +1,704 @@
+<meta name="dash-one-writer">
+<meta name="dash-form" content="dashboard">
+<style>
+.bb { max-width: 1040px; margin: 0 auto; display: flex; flex-direction: column; gap: var(--cds-gap-xl); font-family: var(--font-anthropic-sans); color: var(--color-fg); }
+.bb *, .bb *::before, .bb *::after { box-sizing: border-box; }
+.bb h1 { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: clamp(1.7rem, 4.4vw, 2.4rem); line-height: 1.15; margin: 0; text-wrap: balance; }
+.bb h2 { font-size: var(--cds-font-size-heading); font-weight: var(--cds-font-weight-medium); margin: 0 0 var(--cds-gap-xs); text-wrap: balance; }
+.bb p { margin: 0; }
+.bb-kicker { font-size: var(--cds-font-size-caption); letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-fg-muted); margin-bottom: var(--cds-gap-sm); }
+.bb-lede { font-size: var(--cds-font-size-body); line-height: 1.55; max-width: 68ch; margin-top: var(--cds-gap-md); }
+.bb-lede b, .bb-sub b, .bb-note b, .bb-kpi-sub b { font-weight: var(--cds-font-weight-medium); font-variant-numeric: tabular-nums; }
+.bb-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: var(--cds-gap-md); }
+.bb-kpi { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-lg); display: flex; flex-direction: column; gap: var(--cds-gap-xs); min-width: 0; }
+.bb-kpi-label { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+.bb-kpi-value { font-family: var(--font-anthropic-serif); font-size: 2.1rem; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.bb-kpi-unit { font-family: var(--font-anthropic-sans); font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); margin-left: 0.3em; }
+.bb-kpi-sub { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); line-height: 1.4; }
+.bb-kpi-warn .bb-kpi-label { color: var(--color-warn); }
+.bb-window { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); margin-top: calc(-1 * var(--cds-gap-md) + var(--cds-gap-xs)); }
+.bb-controls { display: flex; flex-wrap: wrap; gap: var(--cds-gap-md) var(--cds-gap-lg); align-items: flex-end; padding: var(--cds-pad-md) 0; border-top: 1px solid var(--color-border-line); border-bottom: 1px solid var(--color-border-line); }
+.bb-ctl { display: flex; flex-direction: column; gap: var(--cds-gap-xs); min-width: 0; }
+.bb-ctl > label, .bb-ctl > .bb-ctl-name { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+.bb-seg { display: inline-flex; flex-wrap: wrap; border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); overflow: hidden; }
+.bb-seg button { font: inherit; font-size: var(--cds-font-size-caption); background: transparent; color: var(--color-fg); border: 0; border-right: 1px solid var(--color-border-line); padding: 6px 12px; cursor: pointer; }
+.bb-seg button:last-child { border-right: 0; }
+.bb-seg button:hover { background: var(--color-panel); }
+.bb-seg button.on { background: var(--color-fg); color: var(--color-bg); }
+.bb-seg button:focus-visible, .bb select:focus-visible { outline: 2px solid var(--color-fg); outline-offset: 2px; }
+.bb-section { display: flex; flex-direction: column; gap: var(--cds-gap-sm); min-width: 0; }
+.bb-sub { color: var(--color-fg-muted); font-size: var(--cds-font-size-body); line-height: 1.5; max-width: 72ch; }
+.bb-chart { position: relative; min-height: 200px; width: 100%; min-width: 0; }
+.bb-chart svg { display: block; max-width: 100%; overflow: visible; }
+.bb-axis text { fill: var(--cds-text-secondary); font-size: 11px; font-family: var(--font-anthropic-sans); }
+.bb-axis path, .bb-axis line { stroke: var(--cds-chart-axis); }
+.bb-grid line { stroke: var(--cds-chart-grid); }
+.bb-cap { fill: var(--cds-text-secondary); font-size: 11px; font-family: var(--font-anthropic-sans); }
+.bb-note { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); line-height: 1.5; max-width: 76ch; }
+.bb-legend { display: flex; flex-wrap: wrap; gap: 4px var(--cds-gap-md); margin-bottom: var(--cds-gap-xs); font-size: var(--cds-font-size-caption); color: var(--cds-text-secondary); }
+.bb-key { display: inline-flex; align-items: center; gap: 6px; }
+.bb-sw { display: inline-block; flex: none; }
+.bb-sw-line { width: 18px; height: 3px; border-radius: 2px; background: var(--c); }
+.bb-sw-dash { width: 18px; height: 0; border-top: 2px dashed var(--c); }
+.bb-sw-bar { width: 9px; height: 12px; background: var(--c); border-radius: 2px; }
+.bb-sw-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--c); }
+.bb-sw-ring { width: 10px; height: 10px; border-radius: 50%; border: 2px solid var(--c); }
+.bb-tip { position: absolute; z-index: 5; pointer-events: none; background: var(--cds-surface-popover); border: 1px solid var(--cds-border); box-shadow: var(--cds-shadow-popover); color: var(--cds-text-secondary); border-radius: var(--cds-radius); padding: 6px 9px; font-size: 12px; line-height: 1.4; max-width: 240px; font-variant-numeric: tabular-nums; }
+.bb-tip-h { color: var(--color-fg); font-weight: var(--cds-font-weight-medium); }
+.bb-bars { display: flex; flex-direction: column; gap: 6px; }
+.bb-bar-row { display: flex; flex-wrap: wrap; align-items: center; gap: 2px var(--cds-gap-sm); }
+.bb-bar-label { flex: 1 1 190px; font-size: var(--cds-font-size-caption); color: var(--color-fg); min-width: 0; }
+.bb-track { position: relative; flex: 3 1 220px; height: 16px; background: var(--cds-chart-grid); border-radius: 3px; opacity: 1; }
+.bb-fill { position: absolute; top: 0; bottom: 0; border-radius: 3px; }
+.bb-zero { position: absolute; top: -2px; bottom: -2px; width: 1px; background: var(--cds-chart-reference); }
+.bb-bar-val { flex: 0 0 46px; text-align: right; font-size: var(--cds-font-size-caption); font-variant-numeric: tabular-nums; }
+.bb-tablewrap { overflow-x: auto; }
+.bb table { border-collapse: collapse; width: 100%; font-size: var(--cds-font-size-caption); font-variant-numeric: tabular-nums; }
+.bb th, .bb td { padding: 6px 10px; text-align: right; border-bottom: 1px solid var(--color-border-line); white-space: nowrap; }
+.bb th:first-child, .bb td:first-child { text-align: left; white-space: normal; min-width: 190px; }
+.bb th { color: var(--color-fg-muted); font-weight: var(--cds-font-weight-medium); }
+.bb-grp { font-size: var(--cds-font-size-caption); font-weight: var(--cds-font-weight-medium); margin: var(--cds-gap-sm) 0 2px; }
+.bb-gain-row { display: flex; flex-direction: column; gap: 0; padding: 4px 0; }
+.bb-gain-top { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0 var(--cds-gap-md); font-size: var(--cds-font-size-caption); }
+.bb-gain-val { font-variant-numeric: tabular-nums; color: var(--cds-text-secondary); }
+.bb-gain-val b { color: var(--color-fg); }
+.bb details { border-top: 1px solid var(--color-border-line); padding-top: var(--cds-pad-md); }
+.bb summary { cursor: pointer; font-weight: var(--cds-font-weight-medium); }
+.bb details p, .bb details li { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); line-height: 1.55; max-width: 76ch; margin-top: var(--cds-gap-sm); }
+.bb details ul { margin: 0; padding-left: 1.2em; }
+.bb-foot { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+@media print { .bb-controls { display: none; } .bb-tip { display: none; } }
+</style>
+
+<div class="bb">
+
+  <header>
+    <p class="bb-kicker">Federal Reserve Beige Book, 1983 to 2020</p>
+    <h1 id="bb-title">Does the tone of the Beige Book predict the next fed funds decision?</h1>
+    <p class="bb-lede" id="bb-lede">Across <b data-draw="num" data-fmt="int" data-source="period_scores" data-where="period=all&amp;model=hold" data-field="n">—</b> FOMC meetings from 1995 to 2020, adding Beige Book tone to lagged policy moves cut the squared forecast error by <b data-draw="num" data-fmt="s0" data-source="gains" data-where="period=all&amp;base=ridge_state&amp;alt=ridge_g_lean_act" data-field="gain_bp2">—</b> bp² per meeting (95% interval <b data-draw="num" data-fmt="s0" data-source="gains" data-where="period=all&amp;base=ridge_state&amp;alt=ridge_g_lean_act" data-field="ci_lo">—</b> to <b data-draw="num" data-fmt="s0" data-source="gains" data-where="period=all&amp;base=ridge_state&amp;alt=ridge_g_lean_act" data-field="ci_hi">—</b>). Between 2009 and 2019, with rates pinned near zero for most of it, the gain was <b data-draw="num" data-fmt="s0" data-source="gains" data-where="period=zlb&amp;base=ridge_state&amp;alt=ridge_g_lean_act" data-field="gain_bp2">—</b> bp² (<b data-draw="num" data-fmt="s0" data-source="gains" data-where="period=zlb&amp;base=ridge_state&amp;alt=ridge_g_lean_act" data-field="ci_lo">—</b> to <b data-draw="num" data-fmt="s0" data-source="gains" data-where="period=zlb&amp;base=ridge_state&amp;alt=ridge_g_lean_act" data-field="ci_hi">—</b>).</p>
+  </header>
+
+  <section class="bb-kpis" aria-label="Headline results">
+    <div class="bb-kpi">
+      <div class="bb-kpi-label">Share of the "always hold" error removed</div>
+      <div class="bb-kpi-value"><b data-draw="num" data-fmt="f2" data-source="period_scores" data-where="period=all&amp;model=ridge_g_lean_act" data-field="r2_vs_hold">—</b></div>
+      <div class="bb-kpi-sub">Policy moves alone: <b data-draw="num" data-fmt="f2" data-source="period_scores" data-where="period=all&amp;model=ridge_state" data-field="r2_vs_hold">—</b>. Best model, with tone.</div>
+    </div>
+    <div class="bb-kpi">
+      <div class="bb-kpi-label">Squared-error gain from adding tone</div>
+      <div class="bb-kpi-value"><b data-draw="num" data-fmt="s0" data-source="gains" data-where="period=all&amp;base=ridge_state&amp;alt=ridge_g_lean_act" data-field="gain_bp2">—</b><span class="bb-kpi-unit">bp² per meeting</span></div>
+      <div class="bb-kpi-sub">95% interval <b data-draw="num" data-fmt="s0" data-source="gains" data-where="period=all&amp;base=ridge_state&amp;alt=ridge_g_lean_act" data-field="ci_lo">—</b> to <b data-draw="num" data-fmt="s0" data-source="gains" data-where="period=all&amp;base=ridge_state&amp;alt=ridge_g_lean_act" data-field="ci_hi">—</b>, block bootstrap.</div>
+    </div>
+    <div class="bb-kpi">
+      <div class="bb-kpi-label">Balanced accuracy on cut, hold, hike</div>
+      <div class="bb-kpi-value"><b data-draw="num" data-fmt="f2" data-source="period_scores" data-where="period=all&amp;model=ridge_g_lean_act" data-field="bal_acc">—</b></div>
+      <div class="bb-kpi-sub">Policy moves alone: <b data-draw="num" data-fmt="f2" data-source="period_scores" data-where="period=all&amp;model=ridge_state" data-field="bal_acc">—</b>. Always hold: <b data-draw="num" data-fmt="f2" data-source="period_scores" data-where="period=all&amp;model=hold" data-field="bal_acc">—</b>.</div>
+    </div>
+    <div class="bb-kpi bb-kpi-warn">
+      <div class="bb-kpi-label">Average miss, still no better than naive</div>
+      <div class="bb-kpi-value"><b data-draw="num" data-fmt="f2" data-source="period_scores" data-where="period=all&amp;model=ridge_g_lean_act" data-field="mae_bp">—</b><span class="bb-kpi-unit">bp</span></div>
+      <div class="bb-kpi-sub">Repeating the last move misses by <b data-draw="num" data-fmt="f2" data-source="period_scores" data-where="period=all&amp;model=last_move" data-field="mae_bp">—</b> bp.</div>
+    </div>
+  </section>
+  <p class="bb-window">All four tiles: walk-forward predictions, 1995 to 2020. Each meeting is predicted from earlier releases only.</p>
+
+  <div class="bb-controls" role="group" aria-label="Chart controls">
+    <div class="bb-ctl">
+      <span class="bb-ctl-name" id="bb-period-name">Period for scores, correlations and gains</span>
+      <div class="bb-seg" role="group" aria-labelledby="bb-period-name">
+        <button type="button" data-period="all" aria-pressed="true">1995–2020</button>
+        <button type="button" data-period="ex2020" aria-pressed="false">Excluding 2020</button>
+        <button type="button" data-period="pre2008" aria-pressed="false">1995–2007</button>
+        <button type="button" data-period="zlb" aria-pressed="false">2009–2019</button>
+      </div>
+    </div>
+    <div class="bb-ctl">
+      <label for="bb-scorer">Sentiment scorer</label>
+      <select class="dash-select" id="bb-scorer">
+        <option value="dir_act_z">Directional tone: activity</option>
+        <option value="dir_price_z">Directional tone: prices and wages</option>
+        <option value="s_dist_z">VADER, TextBlob and Flair</option>
+        <option value="s_nat_z">National summary, same three scorers</option>
+        <option value="lm_net_z">Loughran–McDonald tone</option>
+      </select>
+    </div>
+    <div class="bb-ctl">
+      <label for="bb-model">Model on the forecast chart</label>
+      <select class="dash-select" id="bb-model">
+        <option value="ridge_g_lean_act">Directional tone, ZLB-gated</option>
+        <option value="ridge_g_both">VADER, TextBlob, Flair, ZLB-gated</option>
+        <option value="ridge_g_lean_old">Price tone and district average, gated</option>
+        <option value="ridge_lean_act">Directional tone, ungated</option>
+        <option value="ridge_both">VADER, TextBlob, Flair, ungated</option>
+        <option value="ridge_state">Policy moves only</option>
+        <option value="gbm_g_lean_act">Boosted trees, directional tone, gated</option>
+        <option value="gbm_g_both">Boosted trees, VADER etc., gated</option>
+        <option value="gbm_state">Boosted trees, policy moves only</option>
+        <option value="last_move">Repeat the last move</option>
+      </select>
+    </div>
+  </div>
+
+  <section class="bb-section" id="bb-timeline">
+    <h2>Sentiment moves with the rate cycle</h2>
+    <p class="bb-sub">The announced target, the chosen scorer measured against its trailing five-year norm, and the change in the target that followed each release. Shaded spans are the zero lower bound, when the Fed could not respond to tone by cutting.</p>
+    <div class="bb-chart" data-draw="timeline" data-source="releases" style="min-height: 440px">—</div>
+  </section>
+
+  <section class="bb-section" id="bb-scatter">
+    <h2>Tone against the next decision</h2>
+    <p class="bb-sub">Each dot is one Beige Book release in the chosen period. Positive tone has tended to come before hikes and negative tone before cuts.</p>
+    <div class="bb-chart" data-draw="scatter" data-source="releases" data-field="chg_bp" style="min-height: 330px">—</div>
+    <p class="bb-note"><span data-draw="sc-name">—</span>: Spearman correlation with the next decision <b data-draw="num" data-fmt="f2" data-source="scorer_sel" data-row="0" data-field="rho_next">—</b>, and with the change in the target over the next four releases <b data-draw="num" data-fmt="f2" data-source="scorer_sel" data-row="0" data-field="rho_6m">—</b>, across <b data-draw="num" data-fmt="int" data-source="scorer_sel" data-row="0" data-field="n">—</b> releases in <span data-draw="sc-period">—</span>. A score near 1 means tone and the decision rise together.</p>
+  </section>
+
+  <section class="bb-section" id="bb-models">
+    <h2>How much of the "always hold" error each model removes</h2>
+    <p class="bb-sub">Score is R² against a forecast of no change, from walk-forward predictions in the chosen period. Zero matches "always hold"; higher is better.</p>
+    <div class="bb-chart" data-draw="modelbars" data-source="scores_now" data-field="r2_vs_hold" style="min-height: 320px">—</div>
+    <div class="bb-tablewrap">
+      <table data-source="scores_now" data-row-key="model" aria-label="Model scores for the chosen period">
+        <thead><tr><th data-field="model">Model</th><th data-field="mae_bp">Average miss (bp)</th><th data-field="r2_vs_hold">R² vs hold</th><th data-field="spearman">Rank correlation</th><th data-field="bal_acc">Balanced accuracy</th></tr></thead>
+        <tbody data-draw="score_rows"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="bb-section" id="bb-forecast">
+    <h2>Where the forecasts earn their advantage</h2>
+    <p class="bb-sub">Top: actual target change at each meeting and the chosen model's prediction. Bottom: the running total of how much squared error each model saves compared with "always hold". The steep steps are the 2001 and 2007 to 2009 easing cycles.</p>
+    <div class="bb-chart" data-draw="forecast" data-source="predictions cum_adv releases" style="min-height: 430px">—</div>
+  </section>
+
+  <section class="bb-section" id="bb-gains">
+    <h2>Does tone add anything beyond lagged policy moves?</h2>
+    <p class="bb-sub">Squared-error gain of each model against the same baseline, with a 95% block-bootstrap interval, in the chosen period. Filled dots have an interval that excludes zero.</p>
+    <div class="bb-chart" data-draw="gainsplot" data-source="gains_now" style="min-height: 320px">—</div>
+  </section>
+
+  <details>
+    <summary>Method and caveats</summary>
+    <ul>
+      <li>One row per Beige Book release. The outcome is the change in the announced target between the release date and 21 days later, which captures the FOMC meeting about two weeks after publication. The upper bound of the range is used after December 2008.</li>
+      <li>Sentiment is scored on each of the twelve district reports and averaged. Scores are z-scored against a trailing window of 40 releases, so no future information leaks in. Directional tone counts up and down words ("rose", "declined") separately in activity sentences and in price and wage sentences. Those word lists are hand-written, not a published lexicon.</li>
+      <li>Models are ridge regressions refit at every release on earlier data only. Predictions are floored so that no cut is predicted when the target is already at the bound. The gated models also switch sentiment off while the target is at the bound.</li>
+      <li>The FOMC began announcing its target in February 1994. Earlier values come from the Fed's reconstruction. Before September 1982 there is no target, so those years are used only to warm up the rolling averages.</li>
+      <li>There are about 100 non-hold decisions in the test period. The directional feature sets and the zero-lower-bound treatment were chosen after seeing earlier results, so the intervals understate the real uncertainty. Data after May 2020 would be a clean test.</li>
+      <li>Sources: Beige Book archive (Federal Reserve Bank of Minneapolis); FRED series FEDFUNDS, DFEDTAR, DFEDTARU and DFEDTARL.</li>
+    </ul>
+  </details>
+
+  <p class="bb-foot">Latest Beige Book in the data: <b data-draw="asof" data-source="releases" data-field="date">—</b>.</p>
+</div>
+
+<script>
+(function () {
+  const PERIOD_LABEL = {all: '1995 to 2020', ex2020: '1995 to 2019', pre2008: '1995 to 2007', zlb: '2009 to 2019'};
+  const RANGE = {all: ['1995-01-01', '2020-12-31'], ex2020: ['1995-01-01', '2019-12-31'], pre2008: ['1995-01-01', '2007-12-31'], zlb: ['2009-01-01', '2019-12-31']};
+  const SCORER_LABEL = {dir_act_z: 'Directional tone: activity', dir_price_z: 'Directional tone: prices and wages', s_dist_z: 'VADER, TextBlob and Flair', s_nat_z: 'National summary, same three scorers', lm_net_z: 'Loughran–McDonald tone'};
+  const MODEL_LABEL = {
+    hold: 'Always hold', last_move: 'Repeat the last move', ridge_state: 'Policy moves only',
+    ridge_both: 'Plus VADER, TextBlob, Flair', ridge_lean_act: 'Plus directional tone',
+    ridge_g_both: 'Plus VADER, TextBlob, Flair, gated', ridge_g_lean_act: 'Plus directional tone, gated',
+    ridge_g_lean_old: 'Plus price tone and district average, gated',
+    gbm_state: 'Boosted trees: policy moves only', gbm_g_both: 'Boosted trees: VADER etc., gated', gbm_g_lean_act: 'Boosted trees: directional tone, gated'
+  };
+  const GAIN_LABEL = {
+    ridge_state__ridge_both: 'VADER, TextBlob, Flair', ridge_state__ridge_lean_act: 'Directional tone',
+    ridge_state__ridge_g_both: 'VADER, TextBlob, Flair, gated', ridge_state__ridge_g_lean_act: 'Directional tone, gated',
+    ridge_both__ridge_g_both: 'Gating, on top of VADER, TextBlob, Flair', ridge_lean_act__ridge_g_lean_act: 'Gating, on top of directional tone'
+  };
+  const parseD = d3.utcParse('%Y-%m-%d');
+  const fmtMon = d3.utcFormat('%b %Y');
+  const fmtDay = d3.utcFormat('%-d %b %Y');
+  const F = {
+    f0: d3.format('.0f'), f1: d3.format('.1f'), f2: d3.format('.2f'),
+    s0: d3.format('+.0f'), s1: d3.format('+.1f'), int: d3.format(',d'),
+    date: (v) => fmtMon(parseD(v))
+  };
+
+  /* ---------- calculations that follow the controls ---------- */
+  dash.calc('scores_now', {
+    inputs: ['period_scores'],
+    title: 'Scores for the chosen period',
+    description: 'The model scores for the period picked in the controls.',
+    fn: (periodScores) => periodScores.filter((r) => r.period === (dash.params().period || 'all'))
+  });
+  dash.calc('gains_now', {
+    inputs: ['gains'],
+    title: 'Gains for the chosen period',
+    description: 'Squared-error gains with bootstrap intervals for the period picked in the controls.',
+    fn: (gains) => gains.filter((r) => r.period === (dash.params().period || 'all')).map((r) => Object.assign({}, r, {pair: r.base + '__' + r.alt}))
+  });
+  dash.calc('scorer_sel', {
+    inputs: ['scorers'],
+    title: 'Chosen scorer, chosen period',
+    description: 'Rank correlations of the picked scorer in the picked period.',
+    fn: (scorers) => scorers.filter((r) => r.period === (dash.params().period || 'all') && r.scorer === (dash.params().scorer || 'dir_act_z'))
+  });
+  dash.calc('cum_adv', {
+    inputs: ['predictions'],
+    title: 'Running squared-error advantage over "always hold"',
+    description: 'Release by release, the squared miss of "always hold" minus each model’s squared miss, added up, in bp².',
+    fn: (predictions) => {
+      const keys = ['ridge_state', 'ridge_g_both', 'ridge_g_lean_act'];
+      const acc = {ridge_state: 0, ridge_g_both: 0, ridge_g_lean_act: 0};
+      return predictions.map((r) => {
+        const o = {date: r.date};
+        keys.forEach((k) => {
+          acc[k] += r.chg_bp * r.chg_bp - (r.chg_bp - r[k]) * (r.chg_bp - r[k]);
+          o[k] = Math.round(acc[k] * 10) / 10;
+        });
+        return o;
+      });
+    }
+  });
+
+  /* ---------- helpers ---------- */
+  function ready(el) {
+    const out = [];
+    for (let i = 1; i < arguments.length; i++) {
+      const g = dash.data(arguments[i]);
+      if (g.status !== 'ok') {
+        el.replaceChildren();
+        el.textContent = g.status === 'error' ? 'This chart could not load.' : '—';
+        return null;
+      }
+      out.push(g.data);
+    }
+    return out;
+  }
+  function mkSvg(el, W, H, label) {
+    return d3.select(el).append('svg').attr('width', '100%').attr('viewBox', '0 0 ' + W + ' ' + H)
+      .attr('role', 'img').attr('aria-label', label);
+  }
+  function mkTip(el) {
+    const t = document.createElement('div');
+    t.className = 'bb-tip';
+    t.hidden = true;
+    el.appendChild(t);
+    return t;
+  }
+  function showTip(tip, el, x, lines) {
+    tip.replaceChildren();
+    lines.forEach((s, i) => {
+      const d = document.createElement('div');
+      if (i === 0) d.className = 'bb-tip-h';
+      d.textContent = s;
+      tip.appendChild(d);
+    });
+    tip.hidden = false;
+    const maxL = el.clientWidth - tip.offsetWidth - 4;
+    tip.style.left = Math.max(4, Math.min(x + 14, maxL)) + 'px';
+    tip.style.top = '28px';
+  }
+  function legend(items) {
+    const d = document.createElement('div');
+    d.className = 'bb-legend';
+    items.forEach((it) => {
+      const s = document.createElement('span');
+      s.className = 'bb-key';
+      const sw = document.createElement('i');
+      sw.className = 'bb-sw bb-sw-' + (it.shape || 'line');
+      sw.style.setProperty('--c', it.color);
+      if (it.opacity) sw.style.opacity = it.opacity;
+      s.appendChild(sw);
+      s.appendChild(document.createTextNode(it.label));
+      d.appendChild(s);
+    });
+    return d;
+  }
+  function yAxis(svg, y, L, W, R, fmt, n) {
+    const g = svg.append('g').attr('class', 'bb-axis bb-grid').attr('transform', 'translate(' + L + ',0)');
+    g.call(d3.axisLeft(y).ticks(n || 4).tickSize(-(W - L - R)).tickFormat(fmt));
+    g.select('.domain').remove();
+    g.selectAll('text').attr('x', -8);
+  }
+  function zlbRuns(rel) {
+    const runs = [];
+    let s = null;
+    rel.forEach((r) => {
+      if (r.zlb === 1 && s === null) s = r.t;
+      if (r.zlb !== 1 && s !== null) { runs.push([s, r.t]); s = null; }
+    });
+    if (s !== null) runs.push([s, rel[rel.length - 1].t]);
+    return runs;
+  }
+  function shadeZlb(svg, x, runs, top, height) {
+    runs.forEach((r) => {
+      svg.append('rect').attr('x', x(r[0])).attr('width', Math.max(1.5, x(r[1]) - x(r[0])))
+        .attr('y', top).attr('height', height)
+        .style('fill', 'var(--cds-chart-muted)').style('opacity', 0.16);
+    });
+  }
+  const C = () => ({target: dash.colors[0], cut: dash.colors[1], sent: dash.colors[2], hike: dash.colors[3], muted: 'var(--cds-chart-muted)', ref: 'var(--cds-chart-reference)'});
+
+  /* ---------- generic number drawing ---------- */
+  dash.draw('num', (el) => {
+    const g = dash.data(el.getAttribute('data-source'));
+    if (g.status !== 'ok') { el.textContent = '—'; return; }
+    let row = null;
+    const w = el.getAttribute('data-where');
+    const ri = el.getAttribute('data-row');
+    if (w) {
+      const conds = w.split('&').map((s) => s.split('=').map(decodeURIComponent));
+      row = g.data.find((r) => conds.every((c) => String(r[c[0]]) === c[1]));
+    } else if (ri !== null) {
+      row = g.data[Number(ri)];
+    }
+    const v = row ? row[el.getAttribute('data-field')] : null;
+    const f = F[el.getAttribute('data-fmt')];
+    el.textContent = v === null || v === undefined || !f ? '—' : f(v);
+  });
+
+  dash.draw('asof', (el) => {
+    const g = dash.data('releases');
+    if (g.status !== 'ok' || !g.data.length) { el.textContent = '—'; return; }
+    el.setAttribute('data-row', String(g.data.length - 1));
+    el.textContent = F.date(g.data[g.data.length - 1].date);
+  });
+  dash.draw('sc-name', (el) => { el.textContent = SCORER_LABEL[dash.params().scorer || 'dir_act_z']; });
+  dash.draw('sc-period', (el) => { el.textContent = PERIOD_LABEL[dash.params().period || 'all']; });
+
+  /* ---------- timeline ---------- */
+  dash.draw('timeline', (el) => {
+    const got = ready(el, 'releases');
+    if (!got) return;
+    const rel = got[0].map((r) => Object.assign({}, r, {t: parseD(r.date)}));
+    const scorer = dash.params().scorer || 'dir_act_z';
+    const k = C();
+    el.replaceChildren();
+    el.appendChild(legend([
+      {label: 'Announced target', color: k.target, shape: 'line'},
+      {label: 'Effective rate, monthly average', color: k.muted, shape: 'line'},
+      {label: 'Zero lower bound', color: k.muted, shape: 'bar', opacity: 0.35},
+      {label: SCORER_LABEL[scorer], color: k.sent, shape: 'line'},
+      {label: 'Target raised', color: k.hike, shape: 'bar'},
+      {label: 'Target cut', color: k.cut, shape: 'bar'}
+    ]));
+    const W = Math.max(300, Math.round(el.clientWidth) || 700);
+    const L = 52, R = 10, h1 = 150, h2 = 110, h3 = 100, gap = 30;
+    const t1 = 8, t2 = t1 + h1 + gap, t3 = t2 + h2 + gap, H = t3 + h3 + 26;
+    const svg = mkSvg(el, W, H, 'Three stacked charts, 1983 to 2020: the announced fed funds target, the chosen Beige Book sentiment score, and the change in the target after each release.');
+    const x = d3.scaleUtc().domain(d3.extent(rel, (d) => d.t)).range([L, W - R]);
+    shadeZlb(svg, x, zlbRuns(rel), t1, t3 + h3 - t1);
+
+    const y1 = d3.scaleLinear().domain([0, d3.max(rel, (d) => Math.max(d.rate_now, d.effective || 0))]).nice().range([t1 + h1, t1]);
+    yAxis(svg, y1, L, W, R, (v) => F.f0(v) + '%', 4);
+    svg.append('path').datum(rel.filter((d) => d.effective !== null)).attr('fill', 'none').style('stroke', k.muted).attr('stroke-width', 1.4)
+      .attr('d', d3.line().x((d) => x(d.t)).y((d) => y1(d.effective)));
+    svg.append('path').datum(rel).attr('fill', 'none').style('stroke', k.target).attr('stroke-width', 2)
+      .attr('d', d3.line().curve(d3.curveStepAfter).x((d) => x(d.t)).y((d) => y1(d.rate_now)));
+
+    const vals = rel.map((d) => d[scorer]).filter((v) => v !== null && v !== undefined);
+    const y2 = d3.scaleLinear().domain(d3.extent(vals.concat([0]))).nice().range([t2 + h2, t2]);
+    svg.append('text').attr('class', 'bb-cap').attr('x', L).attr('y', t2 - 10).text('Sentiment, z-score versus trailing five years');
+    yAxis(svg, y2, L, W, R, F.f0, 4);
+    svg.append('line').attr('x1', L).attr('x2', W - R).attr('y1', y2(0)).attr('y2', y2(0)).style('stroke', k.ref);
+    svg.append('path').datum(rel.filter((d) => d[scorer] !== null && d[scorer] !== undefined)).attr('fill', 'none')
+      .style('stroke', k.sent).attr('stroke-width', 1.5)
+      .attr('d', d3.line().x((d) => x(d.t)).y((d) => y2(d[scorer])));
+
+    const cv = rel.map((d) => d.chg_bp);
+    const y3 = d3.scaleLinear().domain(d3.extent(cv.concat([0]))).nice().range([t3 + h3, t3]);
+    svg.append('text').attr('class', 'bb-cap').attr('x', L).attr('y', t3 - 10).text('Change in the target after the release, basis points');
+    yAxis(svg, y3, L, W, R, F.f0, 3);
+    svg.append('g').selectAll('rect').data(rel.filter((d) => d.chg_bp !== 0)).join('rect')
+      .attr('x', (d) => x(d.t) - 1).attr('width', 2)
+      .attr('y', (d) => Math.min(y3(0), y3(d.chg_bp))).attr('height', (d) => Math.abs(y3(d.chg_bp) - y3(0)))
+      .style('fill', (d) => (d.chg_bp > 0 ? k.hike : k.cut));
+    svg.append('line').attr('x1', L).attr('x2', W - R).attr('y1', y3(0)).attr('y2', y3(0)).style('stroke', k.ref);
+    svg.append('g').attr('class', 'bb-axis').attr('transform', 'translate(0,' + (t3 + h3 + 4) + ')')
+      .call(d3.axisBottom(x).ticks(W < 520 ? 5 : 10).tickSizeOuter(0)).select('.domain').remove();
+
+    const tip = mkTip(el);
+    const vline = svg.append('line').attr('y1', t1).attr('y2', t3 + h3).style('stroke', k.ref).style('display', 'none');
+    const dots = svg.append('g').style('display', 'none');
+    const d1 = dots.append('circle').attr('r', 3.5).style('fill', k.target);
+    const d2 = dots.append('circle').attr('r', 3.5).style('fill', k.sent);
+    const bis = d3.bisector((d) => d.t).center;
+    function move(ev) {
+      const px = d3.pointer(ev, svg.node())[0];
+      const d = rel[bis(rel, x.invert(px))];
+      vline.attr('x1', x(d.t)).attr('x2', x(d.t)).style('display', null);
+      dots.style('display', null);
+      d1.attr('cx', x(d.t)).attr('cy', y1(d.rate_now));
+      d2.attr('cx', x(d.t)).attr('cy', d[scorer] === null || d[scorer] === undefined ? -20 : y2(d[scorer]));
+      const lines = [fmtDay(d.t), 'Target ' + F.f2(d.rate_now) + '%' + (d.effective !== null ? ', effective ' + F.f2(d.effective) + '%' : '')];
+      if (d[scorer] !== null && d[scorer] !== undefined) lines.push(SCORER_LABEL[scorer] + ': ' + F.s1(d[scorer]));
+      lines.push('Next decision: ' + (d.chg_bp === 0 ? 'hold' : F.s0(d.chg_bp) + ' bp'));
+      showTip(tip, el, x(d.t), lines);
+    }
+    function leave() { vline.style('display', 'none'); dots.style('display', 'none'); tip.hidden = true; }
+    svg.append('rect').attr('x', L).attr('y', t1).attr('width', W - L - R).attr('height', t3 + h3 - t1)
+      .style('fill', 'transparent').style('touch-action', 'pan-y')
+      .on('pointermove', move).on('pointerdown', move).on('pointerleave', leave);
+  });
+
+  /* ---------- scatter ---------- */
+  dash.draw('scatter', (el) => {
+    const got = ready(el, 'releases');
+    if (!got) return;
+    const p = dash.params();
+    const scorer = p.scorer || 'dir_act_z';
+    const range = RANGE[p.period || 'all'];
+    const k = C();
+    el.setAttribute('data-field', 'chg_bp ' + scorer);
+    const rows = got[0].filter((r) => r.date >= range[0] && r.date <= range[1] && r[scorer] !== null && r[scorer] !== undefined);
+    el.replaceChildren();
+    if (!rows.length) { el.textContent = 'No releases in this period.'; return; }
+    el.appendChild(legend([
+      {label: 'Target raised', color: k.hike, shape: 'dot'},
+      {label: 'Target cut', color: k.cut, shape: 'dot'},
+      {label: 'No change', color: k.muted, shape: 'ring'}
+    ]));
+    const W = Math.max(300, Math.round(el.clientWidth) || 700);
+    const L = 52, R = 12, T = 10, H = 310, B = 40;
+    const svg = mkSvg(el, W, H, 'Scatter of ' + SCORER_LABEL[scorer] + ' against the change in the fed funds target after each release.');
+    const x = d3.scaleLinear().domain(d3.extent(rows, (r) => r[scorer])).nice().range([L, W - R]);
+    const y = d3.scaleLinear().domain(d3.extent(rows.map((r) => r.chg_bp).concat([0]))).nice().range([H - B, T]);
+    yAxis(svg, y, L, W, R, F.f0, 5);
+    svg.append('g').attr('class', 'bb-axis').attr('transform', 'translate(0,' + (H - B + 6) + ')').call(d3.axisBottom(x).ticks(W < 480 ? 5 : 9).tickSizeOuter(0)).select('.domain').remove();
+    svg.append('text').attr('class', 'bb-cap').attr('x', (L + W - R) / 2).attr('y', H - 6).attr('text-anchor', 'middle').text(SCORER_LABEL[scorer] + ', z-score versus trailing five years');
+    svg.append('text').attr('class', 'bb-cap').attr('transform', 'rotate(-90)').attr('x', -(T + H - B) / 2).attr('y', 12).attr('text-anchor', 'middle').text('Target change, bp');
+    svg.append('line').attr('x1', L).attr('x2', W - R).attr('y1', y(0)).attr('y2', y(0)).style('stroke', k.ref);
+    const holds = rows.filter((r) => r.chg_bp === 0);
+    const moves = rows.filter((r) => r.chg_bp !== 0);
+    svg.append('g').selectAll('circle').data(holds).join('circle').attr('cx', (r) => x(r[scorer])).attr('cy', (r) => y(r.chg_bp)).attr('r', 3)
+      .attr('fill', 'none').style('stroke', k.muted).attr('stroke-width', 1.2).style('opacity', 0.75);
+    svg.append('g').selectAll('circle').data(moves).join('circle').attr('cx', (r) => x(r[scorer])).attr('cy', (r) => y(r.chg_bp)).attr('r', 4.5)
+      .style('fill', (r) => (r.chg_bp > 0 ? k.hike : k.cut)).style('stroke', 'var(--color-bg)').attr('stroke-width', 1.2);
+    const tip = mkTip(el);
+    const ring = svg.append('circle').attr('r', 8).attr('fill', 'none').style('stroke', 'var(--color-fg)').attr('stroke-width', 1.5).style('display', 'none');
+    function move(ev) {
+      const [mx, my] = d3.pointer(ev, svg.node());
+      const best = d3.least(rows, (r) => Math.hypot(x(r[scorer]) - mx, y(r.chg_bp) - my));
+      if (!best || Math.hypot(x(best[scorer]) - mx, y(best.chg_bp) - my) > 24) { leave(); return; }
+      ring.attr('cx', x(best[scorer])).attr('cy', y(best.chg_bp)).style('display', null);
+      showTip(tip, el, x(best[scorer]), [fmtDay(parseD(best.date)), SCORER_LABEL[scorer] + ': ' + F.s1(best[scorer]),
+        'Next decision: ' + (best.chg_bp === 0 ? 'hold' : F.s0(best.chg_bp) + ' bp')]);
+    }
+    function leave() { ring.style('display', 'none'); tip.hidden = true; }
+    svg.append('rect').attr('x', L).attr('y', T).attr('width', W - L - R).attr('height', H - B - T)
+      .style('fill', 'transparent').style('touch-action', 'pan-y')
+      .on('pointermove', move).on('pointerdown', move).on('pointerleave', leave);
+  });
+
+  /* ---------- model bars ---------- */
+  dash.draw('modelbars', (el) => {
+    const got = ready(el, 'scores_now');
+    if (!got) return;
+    const rows = got[0];
+    const k = C();
+    el.replaceChildren();
+    if (!rows.length) { el.textContent = '—'; return; }
+    el.appendChild(legend([
+      {label: 'Naive forecasts', color: k.muted, shape: 'bar'},
+      {label: 'Lagged policy moves only', color: k.cut, shape: 'bar'},
+      {label: 'With Beige Book tone', color: k.target, shape: 'bar'}
+    ]));
+    const vals = rows.map((r) => r.r2_vs_hold);
+    const lo = Math.min(0, d3.min(vals)), hi = Math.max(0.1, d3.max(vals));
+    const pct = (v) => ((v - lo) / (hi - lo)) * 100;
+    const wrap = document.createElement('div');
+    wrap.className = 'bb-bars';
+    rows.forEach((r) => {
+      const row = document.createElement('div');
+      row.className = 'bb-bar-row';
+      const lab = document.createElement('span');
+      lab.className = 'bb-bar-label';
+      lab.textContent = MODEL_LABEL[r.model] || r.model;
+      const track = document.createElement('div');
+      track.className = 'bb-track';
+      const fill = document.createElement('div');
+      fill.className = 'bb-fill';
+      const v = r.r2_vs_hold;
+      fill.style.left = pct(Math.min(0, v)) + '%';
+      fill.style.width = Math.abs(pct(v) - pct(0)) + '%';
+      fill.style.background = (r.model === 'hold' || r.model === 'last_move') ? k.muted : (/state$/.test(r.model) ? k.cut : k.target);
+      const zero = document.createElement('div');
+      zero.className = 'bb-zero';
+      zero.style.left = pct(0) + '%';
+      track.appendChild(fill);
+      track.appendChild(zero);
+      const val = document.createElement('span');
+      val.className = 'bb-bar-val';
+      val.setAttribute('data-source', 'scores_now');
+      val.setAttribute('data-field', 'r2_vs_hold');
+      val.setAttribute('data-where', 'model=' + encodeURIComponent(r.model));
+      val.textContent = F.f2(v);
+      row.appendChild(lab);
+      row.appendChild(track);
+      row.appendChild(val);
+      wrap.appendChild(row);
+    });
+    el.appendChild(wrap);
+  });
+
+  dash.draw('score_rows', (tb) => {
+    const g = dash.data('scores_now');
+    tb.replaceChildren();
+    if (g.status !== 'ok') return;
+    g.data.forEach((r) => {
+      const tr = document.createElement('tr');
+      tr.setAttribute('data-key', encodeURIComponent(r.model));
+      [MODEL_LABEL[r.model] || r.model, F.f2(r.mae_bp), F.f2(r.r2_vs_hold), r.spearman === null ? '—' : F.f2(r.spearman), F.f2(r.bal_acc)].forEach((s) => {
+        const td = document.createElement('td');
+        td.textContent = s;
+        tr.appendChild(td);
+      });
+      tb.appendChild(tr);
+    });
+  });
+
+  /* ---------- forecast ---------- */
+  dash.draw('forecast', (el) => {
+    const got = ready(el, 'predictions', 'cum_adv', 'releases');
+    if (!got) return;
+    const model = dash.params().model || 'ridge_g_lean_act';
+    const k = C();
+    const pr = got[0].map((r, i) => Object.assign({}, r, {t: parseD(r.date), pred: r[model], c: got[1][i]}));
+    const rel = got[2].map((r) => Object.assign({}, r, {t: parseD(r.date)}));
+    el.replaceChildren();
+    el.appendChild(legend([
+      {label: 'Actual change', color: k.muted, shape: 'bar'},
+      {label: 'Predicted: ' + (MODEL_LABEL[model] || model), color: k.sent, shape: 'line'},
+      {label: 'Policy moves only', color: k.cut, shape: 'dash'},
+      {label: 'VADER, TextBlob, Flair, gated', color: k.hike, shape: 'line'},
+      {label: 'Directional tone, gated', color: k.target, shape: 'line'}
+    ]));
+    const W = Math.max(300, Math.round(el.clientWidth) || 700);
+    const L = 58, R = 10, h1 = 170, h2 = 150, gap = 34, t1 = 8, t2 = t1 + h1 + gap, H = t2 + h2 + 26;
+    const svg = mkSvg(el, W, H, 'Two charts, 1995 to 2020: actual and predicted target changes at each meeting, and the running squared-error advantage of three models over always hold.');
+    const x = d3.scaleUtc().domain(d3.extent(pr, (d) => d.t)).range([L, W - R]);
+    shadeZlb(svg, x, zlbRuns(rel).filter((r) => r[1] >= x.domain()[0] && r[0] <= x.domain()[1]), t1, t2 + h2 - t1);
+    const y1 = d3.scaleLinear().domain(d3.extent(pr.map((d) => d.chg_bp).concat(pr.map((d) => d.pred), [0]))).nice().range([t1 + h1, t1]);
+    yAxis(svg, y1, L, W, R, F.f0, 5);
+    svg.append('g').selectAll('rect').data(pr.filter((d) => d.chg_bp !== 0)).join('rect')
+      .attr('x', (d) => x(d.t) - 1).attr('width', 2).attr('y', (d) => Math.min(y1(0), y1(d.chg_bp))).attr('height', (d) => Math.abs(y1(d.chg_bp) - y1(0)))
+      .style('fill', k.muted);
+    svg.append('line').attr('x1', L).attr('x2', W - R).attr('y1', y1(0)).attr('y2', y1(0)).style('stroke', k.ref);
+    svg.append('path').datum(pr).attr('fill', 'none').style('stroke', k.sent).attr('stroke-width', 1.6)
+      .attr('d', d3.line().x((d) => x(d.t)).y((d) => y1(d.pred)));
+    svg.append('text').attr('class', 'bb-cap').attr('x', L).attr('y', t1 + h1 + 24).text('Target change per meeting, basis points');
+
+    const series = [['ridge_state', k.cut, '5 4'], ['ridge_g_both', k.hike, null], ['ridge_g_lean_act', k.target, null]];
+    const allc = [];
+    pr.forEach((d) => series.forEach((s) => allc.push(d.c[s[0]])));
+    const y2 = d3.scaleLinear().domain(d3.extent(allc.concat([0]))).nice().range([t2 + h2, t2]);
+    yAxis(svg, y2, L, W, R, d3.format(',.0f'), 4);
+    svg.append('line').attr('x1', L).attr('x2', W - R).attr('y1', y2(0)).attr('y2', y2(0)).style('stroke', k.ref);
+    series.forEach((s) => {
+      const path = svg.append('path').datum(pr).attr('fill', 'none').style('stroke', s[1]).attr('stroke-width', 1.8)
+        .attr('d', d3.line().x((d) => x(d.t)).y((d) => y2(d.c[s[0]])));
+      if (s[2]) path.attr('stroke-dasharray', s[2]);
+    });
+    svg.append('text').attr('class', 'bb-cap').attr('x', L).attr('y', t2 - 12).text('Running squared-error advantage over always hold, bp²');
+    svg.append('g').attr('class', 'bb-axis').attr('transform', 'translate(0,' + (t2 + h2 + 4) + ')')
+      .call(d3.axisBottom(x).ticks(W < 520 ? 5 : 9).tickSizeOuter(0)).select('.domain').remove();
+
+    const tip = mkTip(el);
+    const vline = svg.append('line').attr('y1', t1).attr('y2', t2 + h2).style('stroke', k.ref).style('display', 'none');
+    const bis = d3.bisector((d) => d.t).center;
+    function move(ev) {
+      const px = d3.pointer(ev, svg.node())[0];
+      const d = pr[bis(pr, x.invert(px))];
+      vline.attr('x1', x(d.t)).attr('x2', x(d.t)).style('display', null);
+      showTip(tip, el, x(d.t), [fmtDay(d.t), 'Actual: ' + (d.chg_bp === 0 ? 'hold' : F.s0(d.chg_bp) + ' bp'),
+        'Predicted: ' + F.s1(d.pred) + ' bp', 'Saved so far, policy only: ' + d3.format(',.0f')(d.c.ridge_state) + ' bp²',
+        'Gated VADER etc.: ' + d3.format(',.0f')(d.c.ridge_g_both) + ', directional: ' + d3.format(',.0f')(d.c.ridge_g_lean_act)]);
+    }
+    function leave() { vline.style('display', 'none'); tip.hidden = true; }
+    svg.append('rect').attr('x', L).attr('y', t1).attr('width', W - L - R).attr('height', t2 + h2 - t1)
+      .style('fill', 'transparent').style('touch-action', 'pan-y')
+      .on('pointermove', move).on('pointerdown', move).on('pointerleave', leave);
+  });
+
+  /* ---------- gains ---------- */
+  dash.draw('gainsplot', (el) => {
+    const got = ready(el, 'gains_now');
+    if (!got) return;
+    const rows = got[0];
+    const k = C();
+    el.replaceChildren();
+    if (!rows.length) { el.textContent = '—'; return; }
+    el.appendChild(legend([
+      {label: 'Interval excludes zero', color: k.target, shape: 'dot'},
+      {label: 'Interval includes zero', color: k.target, shape: 'ring'}
+    ]));
+    const W = Math.max(280, Math.round(el.clientWidth) || 600);
+    const L = 8, R = 8;
+    const lo = d3.min(rows, (r) => r.ci_lo), hi = d3.max(rows, (r) => r.ci_hi);
+    const pad = (hi - lo) * 0.05 || 1;
+    const x = d3.scaleLinear().domain([Math.min(lo, 0) - pad, Math.max(hi, 0) + pad]).range([L, W - R]);
+    let group = null;
+    rows.forEach((r) => {
+      const g = r.base === 'ridge_state' ? 'Adding tone to lagged policy moves' : 'Adding zero-lower-bound gating to a model that already has tone';
+      if (g !== group) {
+        const h = document.createElement('div');
+        h.className = 'bb-grp';
+        h.textContent = g;
+        el.appendChild(h);
+        group = g;
+      }
+      const row = document.createElement('div');
+      row.className = 'bb-gain-row';
+      const top = document.createElement('div');
+      top.className = 'bb-gain-top';
+      const name = document.createElement('span');
+      name.textContent = GAIN_LABEL[r.pair] || r.pair;
+      const val = document.createElement('span');
+      val.className = 'bb-gain-val';
+      const where = 'pair=' + encodeURIComponent(r.pair);
+      const mk = (field, fmt, bold) => {
+        const s = document.createElement(bold ? 'b' : 'span');
+        s.setAttribute('data-source', 'gains_now');
+        s.setAttribute('data-field', field);
+        s.setAttribute('data-where', where);
+        s.textContent = F[fmt](r[field]);
+        return s;
+      };
+      val.appendChild(mk('gain_bp2', 's1', true));
+      val.appendChild(document.createTextNode(' bp², interval '));
+      val.appendChild(mk('ci_lo', 's0'));
+      val.appendChild(document.createTextNode(' to '));
+      val.appendChild(mk('ci_hi', 's0'));
+      top.appendChild(name);
+      top.appendChild(val);
+      row.appendChild(top);
+      const svg = d3.create('svg').attr('width', '100%').attr('viewBox', '0 0 ' + W + ' 22').attr('role', 'img')
+        .attr('aria-label', (GAIN_LABEL[r.pair] || r.pair) + ': gain ' + F.s1(r.gain_bp2) + ' bp squared, interval ' + F.s0(r.ci_lo) + ' to ' + F.s0(r.ci_hi));
+      svg.append('line').attr('x1', x(0)).attr('x2', x(0)).attr('y1', 0).attr('y2', 22).style('stroke', k.ref);
+      svg.append('line').attr('x1', x(r.ci_lo)).attr('x2', x(r.ci_hi)).attr('y1', 11).attr('y2', 11).style('stroke', k.target).attr('stroke-width', 2.5).attr('stroke-linecap', 'round');
+      const sig = r.ci_lo > 0;
+      svg.append('circle').attr('cx', x(r.gain_bp2)).attr('cy', 11).attr('r', 5)
+        .style('fill', sig ? k.target : 'var(--color-bg)').style('stroke', k.target).attr('stroke-width', 2);
+      row.appendChild(svg.node());
+      el.appendChild(row);
+    });
+    const ax = d3.create('svg').attr('width', '100%').attr('viewBox', '0 0 ' + W + ' 36').attr('role', 'img').attr('aria-label', 'Axis: squared-error gain, basis points squared per meeting');
+    ax.append('g').attr('class', 'bb-axis').attr('transform', 'translate(0,2)').call(d3.axisBottom(x).ticks(W < 480 ? 5 : 8).tickSizeOuter(0).tickFormat(d3.format('+.0f')));
+    ax.append('text').attr('class', 'bb-cap').attr('x', (L + W - R) / 2).attr('y', 32).attr('text-anchor', 'middle').text('Squared-error gain, bp² per meeting. Right of zero means tone helped.');
+    el.appendChild(ax.node());
+  });
+
+  /* ---------- controls ---------- */
+  document.querySelectorAll('[data-period]').forEach((b) => {
+    b.addEventListener('click', () => dash.setParams({period: b.getAttribute('data-period')}));
+  });
+  const selS = document.getElementById('bb-scorer');
+  const selM = document.getElementById('bb-model');
+  if (selS) selS.addEventListener('change', () => dash.setParams({scorer: selS.value}));
+  if (selM) selM.addEventListener('change', () => dash.setParams({model: selM.value}));
+  dash.onData(() => {
+    const p = dash.params();
+    document.querySelectorAll('[data-period]').forEach((b) => {
+      const on = b.getAttribute('data-period') === (p.period || 'all');
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+      b.classList.toggle('on', on);
+    });
+    if (selS && document.activeElement !== selS) selS.value = p.scorer || 'dir_act_z';
+    if (selM && document.activeElement !== selM) selM.value = p.model || 'ridge_g_lean_act';
+  });
+})();
+</script>
