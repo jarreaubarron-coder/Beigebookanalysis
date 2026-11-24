@@ -100,6 +100,19 @@ python3 dashboard/build_data.py dashboard/data   # after predict.py: JSON data f
 (`releases`, `predictions`, `period_scores`, `gains`, `scorers`). The sub-period scores, bootstrap intervals and correlations are computed in
 `build_data.py`, so the page only displays them. The published copy is a snapshot: re-run the build and re-upload the files to refresh it.
 
+### Standalone version for GitHub Pages
+
+`dashboard/index.html` only runs inside Claude's dashboard runtime. For a version that runs in any browser:
+
+```
+python3 dashboard/build_standalone.py   # writes docs/index.html (data embedded, d3 from cdnjs)
+```
+
+It wraps the same page in a normal HTML document with a small stand-in for the runtime. To publish it, open the repository's
+Settings > Pages, choose "Deploy from a branch", branch `master`, folder `/docs`. The site is then at
+`https://<user>.github.io/<repo>/`. Opening `docs/index.html` locally also works (it needs internet for d3).
+Rebuild after `predict.py` and `dashboard/build_data.py` whenever the results change.
+
 ## Dependencies
 
 Dependencies are listed in `requirements.txt`. Tested + Developed on Python 3.8.

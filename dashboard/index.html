@@ -443,7 +443,6 @@
     const scorer = p.scorer || 'dir_act_z';
     const range = RANGE[p.period || 'all'];
     const k = C();
-    el.setAttribute('data-field', 'chg_bp ' + scorer);
     const rows = got[0].filter((r) => r.date >= range[0] && r.date <= range[1] && r[scorer] !== null && r[scorer] !== undefined);
     el.replaceChildren();
     if (!rows.length) { el.textContent = 'No releases in this period.'; return; }
@@ -568,7 +567,7 @@
       {label: 'Directional tone, gated', color: k.target, shape: 'line'}
     ]));
     const W = Math.max(300, Math.round(el.clientWidth) || 700);
-    const L = 58, R = 10, h1 = 170, h2 = 150, gap = 34, t1 = 8, t2 = t1 + h1 + gap, H = t2 + h2 + 26;
+    const L = 58, R = 10, h1 = 170, h2 = 150, gap = 34, t1 = 26, t2 = t1 + h1 + gap, H = t2 + h2 + 26;
     const svg = mkSvg(el, W, H, 'Two charts, 1995 to 2020: actual and predicted target changes at each meeting, and the running squared-error advantage of three models over always hold.');
     const x = d3.scaleUtc().domain(d3.extent(pr, (d) => d.t)).range([L, W - R]);
     shadeZlb(svg, x, zlbRuns(rel).filter((r) => r[1] >= x.domain()[0] && r[0] <= x.domain()[1]), t1, t2 + h2 - t1);
@@ -580,7 +579,7 @@
     svg.append('line').attr('x1', L).attr('x2', W - R).attr('y1', y1(0)).attr('y2', y1(0)).style('stroke', k.ref);
     svg.append('path').datum(pr).attr('fill', 'none').style('stroke', k.sent).attr('stroke-width', 1.6)
       .attr('d', d3.line().x((d) => x(d.t)).y((d) => y1(d.pred)));
-    svg.append('text').attr('class', 'bb-cap').attr('x', L).attr('y', t1 + h1 + 24).text('Target change per meeting, basis points');
+    svg.append('text').attr('class', 'bb-cap').attr('x', L).attr('y', t1 - 10).text('Target change per meeting, basis points');
 
     const series = [['ridge_state', k.cut, '5 4'], ['ridge_g_both', k.hike, null], ['ridge_g_lean_act', k.target, null]];
     const allc = [];
@@ -677,7 +676,7 @@
       el.appendChild(row);
     });
     const ax = d3.create('svg').attr('width', '100%').attr('viewBox', '0 0 ' + W + ' 36').attr('role', 'img').attr('aria-label', 'Axis: squared-error gain, basis points squared per meeting');
-    ax.append('g').attr('class', 'bb-axis').attr('transform', 'translate(0,2)').call(d3.axisBottom(x).ticks(W < 480 ? 5 : 8).tickSizeOuter(0).tickFormat(d3.format('+.0f')));
+    ax.append('g').attr('class', 'bb-axis').attr('transform', 'translate(0,2)').call(d3.axisBottom(x).ticks(W < 480 ? 5 : 8).tickSizeOuter(0).tickFormat((v) => (v === 0 ? '0' : d3.format('+.0f')(v))));
     ax.append('text').attr('class', 'bb-cap').attr('x', (L + W - R) / 2).attr('y', 32).attr('text-anchor', 'middle').text('Squared-error gain, bp² per meeting. Right of zero means tone helped.');
     el.appendChild(ax.node());
   });
