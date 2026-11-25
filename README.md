@@ -97,7 +97,7 @@ Two questions: does Beige Book tone (or our model's predicted decision) predict 
 ```
 python3 fetch_spx.py                     # daily ^GSPC -> Data/SPX_daily.csv (git-ignored; Yahoo's terms restrict redistribution)
 python3 -I fomc.py <folder>              # FOMC meeting dates from the Fed's fomchistorical<YYYY>.htm pages -> Data/FOMC_dates.csv
-python3 markets.py                       # event study + timing comparison -> out/csv/event_*.csv, timing_strategies.csv, out/figs/
+python3 markets.py                       # event study + timing comparison -> out/csv/event_*.csv, announcement_stats.csv, timing_*.csv, out/figs/
 ```
 
 Each release is matched to the next scheduled meeting (13--16 days later; 210 of 212 match). The event study covers the 162 scheduled meetings from Feb 2000
@@ -129,7 +129,7 @@ Findings:
 
 Live at <https://jarreaubarron-coder.github.io/Beigebookanalysis/>.
 
-`dashboard/` holds the source of an interactive dashboard that summarises the findings above (period, scorer and model pickers; timeline, scatter, model scores, forecast and bootstrap-gain charts).
+`dashboard/` holds the source of an interactive dashboard that summarises the findings above (period, scorer and model pickers; timeline, scatter, model scores, forecast and bootstrap-gain charts), plus the S&P 500 section (announcement-day scatter and regression intervals, and buy-and-hold against the two rules, with sample and period pickers).
 
 ```
 python3 dashboard/build_data.py dashboard/data   # after predict.py: JSON data files from out/csv/
@@ -137,7 +137,8 @@ python3 dashboard/build_data.py dashboard/data   # after predict.py: JSON data f
 
 `dashboard/index.html` is the page. It was published as a Claude Artifact of the Data type, which reads the five JSON files as datasets
 (`releases`, `predictions`, `period_scores`, `gains`, `scorers`). The sub-period scores, bootstrap intervals and correlations are computed in
-`build_data.py`, so the page only displays them. The published copy is a snapshot: re-run the build and re-upload the files to refresh it.
+`build_data.py`, so the page only displays them. The S&P 500 section adds five more datasets (`events`, `event_regs`, `event_stats`, `timing`, `timing_boot`) built from the outputs of
+`markets.py` (run it first). The published copy is a snapshot: re-run the build and re-upload the files to refresh it.
 
 ### Standalone version for GitHub Pages
 

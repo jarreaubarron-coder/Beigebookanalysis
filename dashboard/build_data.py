@@ -119,3 +119,44 @@ for per, (a, b) in PERIODS.items():
                      "rho_6m": round(float(spearmanr(sub[s], sub["fwd6_bp"], nan_policy="omit").statistic), 3)})
 write("scorers.json", rows, [{"label": "Method", "value": "Spearman rank correlation between each sentiment scorer (district average, z-scored vs trailing window) at a release "
                                                           "and (rho_next) the target change at the next meeting, (rho_6m) the change in the target over the following four releases."}])
+
+
+# ---- S&P 500 section (outputs of markets.py) ----
+meta_sp = [{"label": "Method", "value": "Scheduled FOMC announcement days, Feb 2000 to Jun 2020 (dates from the Fed's historical meeting pages). Returns are close-to-close log "
+                                          "returns of the S&P 500 price index, in percent. Tone and the model's predicted change come from the Beige Book published about two "
+                                          "weeks before each meeting. Surprise = actual minus model-predicted change, a proxy only (not market-implied). Regressions use "
+                                          "heteroskedasticity-robust (HC3) standard errors on standardised regressors."},
+           {"label": "markets.py", "value": open("markets.py").read(), "type": "code", "lang": "python"}]
+
+ev = pd.read_csv("out/csv/event_study.csv", parse_dates=["day"])
+ev["day"] = ev["day"].dt.strftime("%Y-%m-%d")
+cols = ["day", "s_dist_z", "dir_act_z", "dir_price_z", "pred_bp", "actual_bp", "surprise_bp", "r0", "crisis"]
+ev = ev[cols].copy()
+for c in cols[1:-1]:
+    ev[c] = ev[c].round(3)
+write("events.json", json.loads(ev.to_json(orient="records")), meta_sp)
+
+reg = pd.read_csv("out/csv/event_regressions.csv")
+reg["sample"] = reg["sample"].map({"2000-2020 (all)": "all", "excl. 2008-09 crisis & 2020": "excl"})
+reg = reg.rename(columns={"coef_pct_per_sd": "coef", "robust_se": "se"})
+for c in ["coef", "se", "p", "r2", "spearman", "perm_p"]:
+    reg[c] = reg[c].round(4)
+write("event_regs.json", json.loads(reg.where(reg.notna(), None).to_json(orient="records")), meta_sp)
+
+st = pd.read_csv("out/csv/announcement_stats.csv").round(4)
+write("event_stats.json", json.loads(st.where(st.notna(), None).to_json(orient="records")), meta_sp)
+
+sid = {"Buy and hold S&P 500": "bh", "R1: tone rule (invested if tone > 0)": "r1", "R2: model rule (invested unless a cut is predicted)": "r2"}
+tm = pd.read_csv("out/csv/timing_subperiods.csv")
+tm["strategy"] = tm["strategy"].map(sid)
+tm = tm.round(3)
+meta_t = [{"label": "Method", "value": "Buy and hold vs two pre-declared rules, release to release, 1995-01 to 2020-05. R1 is invested if the district tone z-score is above zero. "
+                                          "R2 is invested unless the model predicts a cut. Otherwise cash at the effective fed funds rate. The position is set from information "
+                                          "at each release and entered at the next close; 10bp cost per switch. The S&P 500 is a price index (no dividends). Not investment advice."},
+          {"label": "markets.py", "value": open("markets.py").read(), "type": "code", "lang": "python"}]
+write("timing.json", json.loads(tm.to_json(orient="records")), meta_t)
+bt = pd.read_csv("out/csv/timing_bootstrap.csv")
+bt["strategy"] = bt["strategy"].map(sid)
+bt = bt.round(3)
+write("timing_boot.json", json.loads(bt.to_json(orient="records")),
+      meta_t + [{"label": "Bootstrap", "value": "Circular block bootstrap (6 release intervals, 4000 resamples, seed 0) of the per-interval log-return difference, rule minus buy and hold, in percentage points."}])

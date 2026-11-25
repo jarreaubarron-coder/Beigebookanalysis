@@ -137,6 +137,24 @@
         <option value="last_move">Repeat the last move</option>
       </select>
     </div>
+    <div class="bb-ctl">
+      <span class="bb-ctl-name" id="bb-sample-name">Meetings in the S&amp;P 500 test</span>
+      <div class="bb-seg" role="group" aria-labelledby="bb-sample-name">
+        <button type="button" data-sample="all" aria-pressed="true">All, 2000–2020</button>
+        <button type="button" data-sample="excl" aria-pressed="false">Excluding 2008–09 and 2020</button>
+      </div>
+    </div>
+    <div class="bb-ctl">
+      <label for="bb-evx">Compare the S&amp;P 500 return with</label>
+      <select class="dash-select" id="bb-evx">
+        <option value="s_dist_z">Tone: VADER, TextBlob, Flair (primary)</option>
+        <option value="dir_act_z">Tone: directional activity</option>
+        <option value="dir_price_z">Tone: directional prices and wages</option>
+        <option value="pred_bp">Model-predicted rate change</option>
+        <option value="actual_bp">Actual rate change</option>
+        <option value="surprise_bp">Surprise: actual minus predicted</option>
+      </select>
+    </div>
   </div>
 
   <section class="bb-section" id="bb-timeline">
@@ -176,6 +194,38 @@
     <div class="bb-chart" data-draw="gainsplot" data-source="gains_now" style="min-height: 320px">—</div>
   </section>
 
+  <section class="bb-section" id="bb-sp">
+    <h2>Does tone predict the S&amp;P 500 on announcement days?</h2>
+    <p class="bb-sub">Close-to-close returns on <b data-draw="num" data-fmt="int" data-source="event_stats" data-where="group=announce" data-field="n">—</b> scheduled FOMC announcement days from 2000 to 2020 averaged <b data-draw="num" data-fmt="f2" data-source="event_stats" data-where="group=announce" data-field="mean_pct">—</b>%, against <b data-draw="num" data-fmt="f2" data-source="event_stats" data-where="group=other" data-field="mean_pct">—</b>% on all other days (t-statistic <b data-draw="num" data-fmt="f1" data-source="event_stats" data-where="group=announce" data-field="t_vs_other">—</b>). The question is whether the Beige Book, published two weeks earlier, says anything about that day's move.</p>
+    <div class="bb-chart" data-draw="evscatter" data-source="events" data-field="r0" style="min-height: 330px">—</div>
+    <p class="bb-note"><span data-draw="ev-name">—</span>, <span data-draw="ev-sample">—</span>: <b data-draw="num" data-fmt="s2" data-source="event_sel" data-row="0" data-field="coef">—</b>% per standard deviation, robust standard error <b data-draw="num" data-fmt="f2" data-source="event_sel" data-row="0" data-field="se">—</b>, p = <b data-draw="num" data-fmt="f2" data-source="event_sel" data-row="0" data-field="p">—</b>, <b data-draw="num" data-fmt="int" data-source="event_sel" data-row="0" data-field="n">—</b> meetings.</p>
+    <p class="bb-sub">Every regression below, with a 95% interval, in percent of S&amp;P 500 return per standard deviation of the regressor. The last four rows are checks: a placebo day, the day after, tone with the market move since the release held fixed, and the size of the surprise against the size of the move.</p>
+    <div class="bb-chart" data-draw="evintervals" data-source="event_regs_now" style="min-height: 420px">—</div>
+  </section>
+
+  <section class="bb-section" id="bb-timing">
+    <h2>Simple rules against buy-and-hold</h2>
+    <p class="bb-sub">Two rules fixed in advance, with no tuning. The tone rule holds the index while the district tone is above its norm. The model rule holds it unless our model predicts a cut. Otherwise the money earns the effective fed funds rate. Each position is set at a release and entered at the next close, with a 10 basis point cost per switch.</p>
+    <div class="bb-ctl">
+      <span class="bb-ctl-name" id="bb-tperiod-name">Period</span>
+      <div class="bb-seg" role="group" aria-labelledby="bb-tperiod-name">
+        <button type="button" data-tperiod="full" aria-pressed="true">1995–2020</button>
+        <button type="button" data-tperiod="1995-2007" aria-pressed="false">1995–2007</button>
+        <button type="button" data-tperiod="2008-2020" aria-pressed="false">2008–2020</button>
+        <button type="button" data-tperiod="2003-2007" aria-pressed="false">2003–2007 (bull market)</button>
+        <button type="button" data-tperiod="2009-2019" aria-pressed="false">2009–2019 (near-zero rates)</button>
+      </div>
+    </div>
+    <div class="bb-chart" data-draw="timingbars" data-source="timing_now" data-field="cagr_pct" style="min-height: 150px">—</div>
+    <div class="bb-tablewrap">
+      <table data-source="timing_now" data-row-key="strategy" aria-label="Buy and hold against two rules, chosen period">
+        <thead><tr><th data-field="strategy">Strategy</th><th data-field="cagr_pct">Annual return (%)</th><th data-field="vol_pct">Volatility (%)</th><th data-field="sharpe">Sharpe</th><th data-field="max_drawdown_pct">Worst drawdown (%)</th><th data-field="pct_days_invested">Days invested (%)</th></tr></thead>
+        <tbody data-draw="timing_rows"></tbody>
+      </table>
+    </div>
+    <p class="bb-note">Over 1995 to 2020, per release interval, the tone rule's return differs from buy-and-hold by <b data-draw="num" data-fmt="s2" data-source="timing_boot" data-where="strategy=r1" data-field="mean_gain_pp">—</b> percentage points (95% interval <b data-draw="num" data-fmt="s2" data-source="timing_boot" data-where="strategy=r1" data-field="ci_lo">—</b> to <b data-draw="num" data-fmt="s2" data-source="timing_boot" data-where="strategy=r1" data-field="ci_hi">—</b>). For the model rule it differs by <b data-draw="num" data-fmt="s2" data-source="timing_boot" data-where="strategy=r2" data-field="mean_gain_pp">—</b> (<b data-draw="num" data-fmt="s2" data-source="timing_boot" data-where="strategy=r2" data-field="ci_lo">—</b> to <b data-draw="num" data-fmt="s2" data-source="timing_boot" data-where="strategy=r2" data-field="ci_hi">—</b>). Both intervals include zero. The rules mostly lower risk, and they trail buy-and-hold in strong markets. The S&amp;P 500 here is a price index without dividends, so buy-and-hold is understated.</p>
+  </section>
+
   <details>
     <summary>Method and caveats</summary>
     <ul>
@@ -184,6 +234,8 @@
       <li>Models are ridge regressions refit at every release on earlier data only. Predictions are floored so that no cut is predicted when the target is already at the bound. The gated models also switch sentiment off while the target is at the bound.</li>
       <li>The FOMC began announcing its target in February 1994. Earlier values come from the Fed's reconstruction. Before September 1982 there is no target, so those years are used only to warm up the rolling averages.</li>
       <li>There are about 100 non-hold decisions in the test period. The directional feature sets and the zero-lower-bound treatment were chosen after seeing earlier results, so the intervals understate the real uncertainty. Data after May 2020 would be a clean test.</li>
+      <li>S&amp;P 500 test: each release is matched to the next scheduled FOMC meeting 13 to 16 days later, using meeting dates from the Fed's historical pages. Announcement-day returns are close-to-close, so they include the morning before the 2pm statement. The surprise is the gap between the actual change and our model's prediction, not a market-implied surprise from futures. Policy news beyond the rate decision, such as forward guidance, is not captured.</li>
+      <li>Of the specifications tested, the only single p-value below 0.05 in the full sample is the price-and-wage tone score, which does not survive a multiple-testing correction or the exclusion of the crisis meetings. The sample has three major drawdowns, so the timing comparison is thin evidence. This is research, not investment advice.</li>
       <li>Sources: Beige Book archive (Federal Reserve Bank of Minneapolis); FRED series FEDFUNDS, DFEDTAR, DFEDTARU and DFEDTARL.</li>
     </ul>
   </details>
@@ -213,7 +265,7 @@
   const fmtDay = d3.utcFormat('%-d %b %Y');
   const F = {
     f0: d3.format('.0f'), f1: d3.format('.1f'), f2: d3.format('.2f'),
-    s0: d3.format('+.0f'), s1: d3.format('+.1f'), int: d3.format(',d'),
+    s0: d3.format('+.0f'), s1: d3.format('+.1f'), s2: d3.format('+.2f'), int: d3.format(',d'),
     date: (v) => fmtMon(parseD(v))
   };
 
@@ -681,23 +733,270 @@
     el.appendChild(ax.node());
   });
 
+  /* ---------- S&P 500 section ---------- */
+  const SAMPLE_LABEL = {all: 'all scheduled meetings, 2000 to 2020', excl: 'excluding the 2008-09 crisis and 2020'};
+  const EV_LABEL = {
+    s_dist_z: 'Tone: VADER, TextBlob, Flair (z-score)', dir_act_z: 'Tone: directional activity (z-score)',
+    dir_price_z: 'Tone: directional prices and wages (z-score)', pred_bp: 'Model-predicted rate change (bp)',
+    actual_bp: 'Actual rate change (bp)', surprise_bp: 'Surprise: actual minus predicted (bp)'
+  };
+  const EV_NAME = {
+    s_dist_z: 'Tone, VADER, TextBlob, Flair (primary test)', dir_act_z: 'Tone, directional activity',
+    dir_price_z: 'Tone, directional prices and wages', pred_bp: 'Model-predicted rate change',
+    actual_bp: 'Actual rate change', surprise_bp: 'Surprise, actual minus predicted'
+  };
+  const REG_LABEL = {
+    'tone: s_dist_z (PRIMARY)|announcement-day return': 'Tone, VADER, TextBlob, Flair (primary test)',
+    'tone: dir_act_z|announcement-day return': 'Tone, directional activity',
+    'tone: dir_price_z|announcement-day return': 'Tone, directional prices and wages',
+    'model-predicted change|announcement-day return': 'Model-predicted rate change',
+    'actual change|announcement-day return': 'Actual rate change',
+    'surprise (actual - predicted)|announcement-day return': 'Surprise, actual minus predicted',
+    'tone, controlling for return since release|announcement-day return': 'Tone, holding the market move since the release fixed',
+    'tone: s_dist_z|PLACEBO: day 7 days before': 'Placebo: tone against the return a week earlier',
+    'tone: s_dist_z|day after announcement': 'Tone against the return the day after',
+    '|surprise||absolute announcement-day return': 'Size of surprise against size of the move'
+  };
+  const STRAT_LABEL = {bh: 'Buy and hold S&P 500', r1: 'Tone rule: invested while tone is above zero', r2: 'Model rule: invested unless a cut is predicted'};
+
+  dash.calc('event_regs_now', {
+    inputs: ['event_regs'],
+    title: 'Announcement-day regressions for the chosen sample',
+    description: 'Each regression with a 95% interval (coefficient plus or minus 1.96 robust standard errors).',
+    fn: (eventRegs) => eventRegs.filter((r) => r.sample === (dash.params().sample || 'all')).map((r) => Object.assign({}, r, {
+      key: r.regressor + '|' + r.outcome,
+      ci_lo: Math.round((r.coef - 1.96 * r.se) * 10000) / 10000,
+      ci_hi: Math.round((r.coef + 1.96 * r.se) * 10000) / 10000
+    }))
+  });
+  dash.calc('event_sel', {
+    inputs: ['event_regs'],
+    title: 'Chosen regressor, chosen sample',
+    description: 'The announcement-day regression for the regressor picked in the controls.',
+    fn: (eventRegs) => {
+      const names = {s_dist_z: 'tone: s_dist_z (PRIMARY)', dir_act_z: 'tone: dir_act_z', dir_price_z: 'tone: dir_price_z',
+        pred_bp: 'model-predicted change', actual_bp: 'actual change', surprise_bp: 'surprise (actual - predicted)'};
+      const p = dash.params();
+      return eventRegs.filter((r) => r.sample === (p.sample || 'all') && r.outcome === 'announcement-day return' &&
+        r.regressor === names[p.evx || 's_dist_z']);
+    }
+  });
+  dash.calc('timing_now', {
+    inputs: ['timing'],
+    title: 'Rule performance for the chosen period',
+    description: 'Buy and hold and the two rules over the period picked in the controls.',
+    fn: (timing) => timing.filter((r) => r.period === (dash.params().tperiod || 'full'))
+  });
+
+  dash.draw('ev-name', (el) => { el.textContent = EV_NAME[dash.params().evx || 's_dist_z']; });
+  dash.draw('ev-sample', (el) => { el.textContent = SAMPLE_LABEL[dash.params().sample || 'all']; });
+
+  dash.draw('evscatter', (el) => {
+    const got = ready(el, 'events');
+    if (!got) return;
+    const p = dash.params();
+    const xv = p.evx || 's_dist_z';
+    const excl = (p.sample || 'all') === 'excl';
+    const rows = got[0].filter((r) => !excl || r.crisis === 0);
+    const k = C();
+    el.replaceChildren();
+    el.appendChild(legend([{label: 'Scheduled meeting', color: k.target, shape: 'dot'}].concat(
+      excl ? [] : [{label: '2008-09 crisis or 2020', color: k.cut, shape: 'dot'}])));
+    const W = Math.max(300, Math.round(el.clientWidth) || 700);
+    const L = 52, R = 12, T = 10, H = 310, B = 40;
+    const svg = mkSvg(el, W, H, 'Scatter of ' + EV_LABEL[xv] + ' against the S&P 500 return on FOMC announcement day.');
+    const x = d3.scaleLinear().domain(d3.extent(rows, (r) => r[xv])).nice().range([L, W - R]);
+    const y = d3.scaleLinear().domain(d3.extent(rows.map((r) => r.r0).concat([0]))).nice().range([H - B, T]);
+    yAxis(svg, y, L, W, R, F.f0, 5);
+    svg.append('g').attr('class', 'bb-axis').attr('transform', 'translate(0,' + (H - B + 6) + ')').call(d3.axisBottom(x).ticks(W < 480 ? 5 : 9).tickSizeOuter(0)).select('.domain').remove();
+    svg.append('text').attr('class', 'bb-cap').attr('x', (L + W - R) / 2).attr('y', H - 6).attr('text-anchor', 'middle').text(EV_LABEL[xv]);
+    svg.append('text').attr('class', 'bb-cap').attr('transform', 'rotate(-90)').attr('x', -(T + H - B) / 2).attr('y', 12).attr('text-anchor', 'middle').text('S&P 500 return on announcement day, %');
+    svg.append('line').attr('x1', L).attr('x2', W - R).attr('y1', y(0)).attr('y2', y(0)).style('stroke', k.ref);
+    const mx = d3.mean(rows, (r) => r[xv]), my = d3.mean(rows, (r) => r.r0);
+    const sxx = d3.sum(rows, (r) => (r[xv] - mx) * (r[xv] - mx));
+    const slope = d3.sum(rows, (r) => (r[xv] - mx) * (r.r0 - my)) / (sxx || 1);
+    const xs = x.domain();
+    svg.append('line').attr('x1', x(xs[0])).attr('x2', x(xs[1])).attr('y1', y(my + slope * (xs[0] - mx))).attr('y2', y(my + slope * (xs[1] - mx)))
+      .style('stroke', k.muted).attr('stroke-width', 1.6).attr('stroke-dasharray', '5 4');
+    svg.append('g').selectAll('circle').data(rows).join('circle').attr('cx', (r) => x(r[xv])).attr('cy', (r) => y(r.r0)).attr('r', 4)
+      .style('fill', (r) => (r.crisis === 1 ? k.cut : k.target)).style('stroke', 'var(--color-bg)').attr('stroke-width', 1).style('opacity', 0.85);
+    const tip = mkTip(el);
+    const ring = svg.append('circle').attr('r', 8).attr('fill', 'none').style('stroke', 'var(--color-fg)').attr('stroke-width', 1.5).style('display', 'none');
+    function move(ev) {
+      const pt = d3.pointer(ev, svg.node());
+      const best = d3.least(rows, (r) => Math.hypot(x(r[xv]) - pt[0], y(r.r0) - pt[1]));
+      if (!best || Math.hypot(x(best[xv]) - pt[0], y(best.r0) - pt[1]) > 24) { leave(); return; }
+      ring.attr('cx', x(best[xv])).attr('cy', y(best.r0)).style('display', null);
+      showTip(tip, el, x(best[xv]), [fmtDay(parseD(best.day)), EV_LABEL[xv] + ': ' + F.s1(best[xv]), 'S&P 500 that day: ' + F.s2(best.r0) + '%',
+        'Rate change: ' + (best.actual_bp === 0 ? 'none' : F.s0(best.actual_bp) + ' bp')]);
+    }
+    function leave() { ring.style('display', 'none'); tip.hidden = true; }
+    svg.append('rect').attr('x', L).attr('y', T).attr('width', W - L - R).attr('height', H - B - T)
+      .style('fill', 'transparent').style('touch-action', 'pan-y')
+      .on('pointermove', move).on('pointerdown', move).on('pointerleave', leave);
+  });
+
+  dash.draw('evintervals', (el) => {
+    const got = ready(el, 'event_regs_now');
+    if (!got) return;
+    const rows = got[0];
+    const k = C();
+    el.replaceChildren();
+    if (!rows.length) { el.textContent = '—'; return; }
+    el.appendChild(legend([
+      {label: '95% interval excludes zero', color: k.target, shape: 'dot'},
+      {label: '95% interval includes zero', color: k.target, shape: 'ring'}
+    ]));
+    const W = Math.max(280, Math.round(el.clientWidth) || 600);
+    const L = 8, R = 8;
+    const lo = Math.min(0, d3.min(rows, (r) => r.ci_lo)), hi = Math.max(0, d3.max(rows, (r) => r.ci_hi));
+    const pad = (hi - lo) * 0.05 || 0.1;
+    const x = d3.scaleLinear().domain([lo - pad, hi + pad]).range([L, W - R]);
+    let group = null;
+    rows.forEach((r) => {
+      const g = r.outcome === 'announcement-day return' ? 'Announcement-day return' : (r.outcome.indexOf('absolute') === 0 ? 'Size of the move' : 'Checks on other days');
+      if (g !== group) {
+        const h = document.createElement('div');
+        h.className = 'bb-grp';
+        h.textContent = g;
+        el.appendChild(h);
+        group = g;
+      }
+      const row = document.createElement('div');
+      row.className = 'bb-gain-row';
+      const top = document.createElement('div');
+      top.className = 'bb-gain-top';
+      const name = document.createElement('span');
+      name.textContent = REG_LABEL[r.key] || r.key;
+      const val = document.createElement('span');
+      val.className = 'bb-gain-val';
+      const where = 'key=' + encodeURIComponent(r.key);
+      const mk = (field, fmt, bold) => {
+        const s = document.createElement(bold ? 'b' : 'span');
+        s.setAttribute('data-source', 'event_regs_now');
+        s.setAttribute('data-field', field);
+        s.setAttribute('data-where', where);
+        s.textContent = F[fmt](r[field]);
+        return s;
+      };
+      val.appendChild(mk('coef', 's2', true));
+      val.appendChild(document.createTextNode('% [ '));
+      val.appendChild(mk('ci_lo', 's2'));
+      val.appendChild(document.createTextNode(', '));
+      val.appendChild(mk('ci_hi', 's2'));
+      val.appendChild(document.createTextNode(' ], p = '));
+      val.appendChild(mk('p', 'f2'));
+      top.appendChild(name);
+      top.appendChild(val);
+      row.appendChild(top);
+      const svg = d3.create('svg').attr('width', '100%').attr('viewBox', '0 0 ' + W + ' 22').attr('role', 'img')
+        .attr('aria-label', (REG_LABEL[r.key] || r.key) + ': ' + F.s2(r.coef) + ' percent, interval ' + F.s2(r.ci_lo) + ' to ' + F.s2(r.ci_hi) + ', p ' + F.f2(r.p));
+      svg.append('line').attr('x1', x(0)).attr('x2', x(0)).attr('y1', 0).attr('y2', 22).style('stroke', k.ref);
+      svg.append('line').attr('x1', x(r.ci_lo)).attr('x2', x(r.ci_hi)).attr('y1', 11).attr('y2', 11).style('stroke', k.target).attr('stroke-width', 2.5).attr('stroke-linecap', 'round');
+      const sig = r.ci_lo > 0 || r.ci_hi < 0;
+      svg.append('circle').attr('cx', x(r.coef)).attr('cy', 11).attr('r', 5)
+        .style('fill', sig ? k.target : 'var(--color-bg)').style('stroke', k.target).attr('stroke-width', 2);
+      row.appendChild(svg.node());
+      el.appendChild(row);
+    });
+    const ax = d3.create('svg').attr('width', '100%').attr('viewBox', '0 0 ' + W + ' 36').attr('role', 'img').attr('aria-label', 'Axis: percent S&P 500 return per standard deviation of the regressor');
+    ax.append('g').attr('class', 'bb-axis').attr('transform', 'translate(0,2)').call(d3.axisBottom(x).ticks(W < 480 ? 5 : 8).tickSizeOuter(0).tickFormat((v) => (v === 0 ? '0' : d3.format('+.1f')(v))));
+    ax.append('text').attr('class', 'bb-cap').attr('x', (L + W - R) / 2).attr('y', 32).attr('text-anchor', 'middle').text('S&P 500 return, % per standard deviation of the regressor');
+    el.appendChild(ax.node());
+  });
+
+  dash.draw('timingbars', (el) => {
+    const got = ready(el, 'timing_now');
+    if (!got) return;
+    const rows = got[0];
+    const k = C();
+    el.replaceChildren();
+    if (!rows.length) { el.textContent = '—'; return; }
+    const hi = Math.max(1, d3.max(rows, (r) => r.cagr_pct) * 1.1), lo = Math.min(0, d3.min(rows, (r) => r.cagr_pct));
+    const pct = (v) => ((v - lo) / (hi - lo)) * 100;
+    const colors = {bh: k.muted, r1: k.target, r2: k.cut};
+    const cap = document.createElement('div');
+    cap.className = 'bb-note';
+    cap.textContent = 'Annual return, % (price index; the rules hold cash at the fed funds rate when out of the market)';
+    el.appendChild(cap);
+    const wrap = document.createElement('div');
+    wrap.className = 'bb-bars';
+    rows.forEach((r) => {
+      const row = document.createElement('div');
+      row.className = 'bb-bar-row';
+      const lab = document.createElement('span');
+      lab.className = 'bb-bar-label';
+      lab.textContent = STRAT_LABEL[r.strategy] || r.strategy;
+      const track = document.createElement('div');
+      track.className = 'bb-track';
+      const fill = document.createElement('div');
+      fill.className = 'bb-fill';
+      fill.style.left = pct(Math.min(0, r.cagr_pct)) + '%';
+      fill.style.width = Math.abs(pct(r.cagr_pct) - pct(0)) + '%';
+      fill.style.background = colors[r.strategy] || k.muted;
+      const zero = document.createElement('div');
+      zero.className = 'bb-zero';
+      zero.style.left = pct(0) + '%';
+      track.appendChild(fill);
+      track.appendChild(zero);
+      const val = document.createElement('span');
+      val.className = 'bb-bar-val';
+      val.setAttribute('data-source', 'timing_now');
+      val.setAttribute('data-field', 'cagr_pct');
+      val.setAttribute('data-where', 'strategy=' + encodeURIComponent(r.strategy));
+      val.textContent = F.f1(r.cagr_pct);
+      row.appendChild(lab);
+      row.appendChild(track);
+      row.appendChild(val);
+      wrap.appendChild(row);
+    });
+    el.appendChild(wrap);
+  });
+
+  dash.draw('timing_rows', (tb) => {
+    const g = dash.data('timing_now');
+    tb.replaceChildren();
+    if (g.status !== 'ok') return;
+    g.data.forEach((r) => {
+      const tr = document.createElement('tr');
+      tr.setAttribute('data-key', encodeURIComponent(r.strategy));
+      [STRAT_LABEL[r.strategy] || r.strategy, F.f1(r.cagr_pct), F.f1(r.vol_pct), F.f2(r.sharpe), F.f1(r.max_drawdown_pct), F.f1(r.pct_days_invested)].forEach((s) => {
+        const td = document.createElement('td');
+        td.textContent = s;
+        tr.appendChild(td);
+      });
+      tb.appendChild(tr);
+    });
+  });
+
   /* ---------- controls ---------- */
   document.querySelectorAll('[data-period]').forEach((b) => {
     b.addEventListener('click', () => dash.setParams({period: b.getAttribute('data-period')}));
   });
+  document.querySelectorAll('[data-sample]').forEach((b) => {
+    b.addEventListener('click', () => dash.setParams({sample: b.getAttribute('data-sample')}));
+  });
+  document.querySelectorAll('[data-tperiod]').forEach((b) => {
+    b.addEventListener('click', () => dash.setParams({tperiod: b.getAttribute('data-tperiod')}));
+  });
   const selS = document.getElementById('bb-scorer');
   const selM = document.getElementById('bb-model');
+  const selE = document.getElementById('bb-evx');
   if (selS) selS.addEventListener('change', () => dash.setParams({scorer: selS.value}));
   if (selM) selM.addEventListener('change', () => dash.setParams({model: selM.value}));
+  if (selE) selE.addEventListener('change', () => dash.setParams({evx: selE.value}));
   dash.onData(() => {
     const p = dash.params();
-    document.querySelectorAll('[data-period]').forEach((b) => {
-      const on = b.getAttribute('data-period') === (p.period || 'all');
-      b.setAttribute('aria-pressed', on ? 'true' : 'false');
-      b.classList.toggle('on', on);
+    [['data-period', 'period', 'all'], ['data-sample', 'sample', 'all'], ['data-tperiod', 'tperiod', 'full']].forEach((t) => {
+      document.querySelectorAll('[' + t[0] + ']').forEach((b) => {
+        const on = b.getAttribute(t[0]) === (p[t[1]] || t[2]);
+        b.setAttribute('aria-pressed', on ? 'true' : 'false');
+        b.classList.toggle('on', on);
+      });
     });
     if (selS && document.activeElement !== selS) selS.value = p.scorer || 'dir_act_z';
     if (selM && document.activeElement !== selM) selM.value = p.model || 'ridge_g_lean_act';
+    if (selE && document.activeElement !== selE) selE.value = p.evx || 's_dist_z';
   });
 })();
 </script>

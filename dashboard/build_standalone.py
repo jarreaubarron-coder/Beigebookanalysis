@@ -11,7 +11,7 @@ Run from the repo root, after dashboard/build_data.py:
 import json
 import os
 
-DATASETS = ["releases", "predictions", "period_scores", "gains", "scorers"]
+DATASETS = ["releases", "predictions", "period_scores", "gains", "scorers", "events", "event_regs", "event_stats", "timing", "timing_boot"]
 D3_URL = "https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"
 REPO_URL = "https://github.com/jarreaubarron-coder/Beigebookanalysis"
 
@@ -56,7 +56,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font: 14p
 SHIM_JS = """
 (function () {
   const DATA = window.__DATA;
-  const params = {period: 'all', scorer: 'dir_act_z', model: 'ridge_g_lean_act'};
+  const params = {period: 'all', scorer: 'dir_act_z', model: 'ridge_g_lean_act', sample: 'all', evx: 's_dist_z', tperiod: 'full'};
   const calcs = {}, draws = [], listeners = [], cache = new Map();
   function rows(id) {
     if (DATA[id]) return DATA[id];

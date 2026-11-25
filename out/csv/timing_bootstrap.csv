@@ -1,0 +1,3 @@
+strategy,mean_gain_pp,ci_lo,ci_hi,p_no_gain
+R1: tone rule (invested if tone > 0),0.038367143854411805,-0.6148384576671815,0.7629284731380443,0.4735
+R2: model rule (invested unless a cut is predicted),0.1954495451555189,-0.3844859347159801,0.8527929746310335,0.28625
