@@ -5,3 +5,4 @@ out/tmp.txt
 txt-*/
 !txt-split/
 .Rproj.user
+Data/SPX_daily.csv

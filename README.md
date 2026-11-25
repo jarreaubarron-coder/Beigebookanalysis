@@ -90,6 +90,41 @@ Caveats: the FOMC only announced its target from Feb 1994 (earlier values are th
 target, so pre-1983 data is only used for the descriptive plot and for warm-up of the rolling normalisation. After Dec 2008 the upper bound
 of the target range is used. Only ~100 non-hold decisions exist, so treat all results as suggestive.
 
+## The S&P 500 and FOMC announcement days
+
+Two questions: does Beige Book tone (or our model's predicted decision) predict the S&P 500's return on the FOMC announcement day, and how do simple rules built on them compare with buy-and-hold?
+
+```
+python3 fetch_spx.py                     # daily ^GSPC -> Data/SPX_daily.csv (git-ignored; Yahoo's terms restrict redistribution)
+python3 -I fomc.py <folder>              # FOMC meeting dates from the Fed's fomchistorical<YYYY>.htm pages -> Data/FOMC_dates.csv
+python3 markets.py                       # event study + timing comparison -> out/csv/event_*.csv, timing_strategies.csv, out/figs/
+```
+
+Each release is matched to the next scheduled meeting (13--16 days later; 210 of 212 match). The event study covers the 162 scheduled meetings from Feb 2000
+(the FOMC issues a statement after every meeting from then on) to Jun 2020. Returns are close-to-close, so they include the morning before the 2pm statement.
+
+![S&P 500 vs rules](out/figs/spx_vs_rules.png)
+![Announcement-day returns](out/figs/fomc_day_returns.png)
+
+Findings:
+
+- Announcement days average +0.26% against +0.01% on other days (same sd), the known FOMC announcement-day premium.
+- **Tone does not reliably predict the announcement-day return.** Primary test (tone `s_dist_z`): -0.21% per sd, robust p = 0.08, permutation p = 0.03 in 2000--2020, but -0.04% (p = 0.71) once the 2008--09 crisis and 2020 are dropped.
+  A placebo on the day a week earlier gives the same sign (-0.12%, -0.18% ex-crisis), so it is rebound-after-bad-news rather than announcement news.
+- The model's predicted change (p = 0.28) and the "surprise" (actual minus predicted; p = 0.77) do not predict returns either. The surprise is only a proxy: markets react to futures-implied surprises and to guidance (the +4.6% day on 2011-08-09 had no rate change).
+- Of 6 specifications x 2 samples, the only individual p < 0.05 is `dir_price_z` in the full sample (p = 0.018), which does not survive a multiple-testing correction or the crisis exclusion.
+- Timing comparison, 1995--2020 (price-only S&P, cash at the effective fed funds rate, 10bp per switch):
+
+| | CAGR | vol | Sharpe | max drawdown | invested |
+|---|---|---|---|---|---|
+| Buy and hold | 7.7% | 19.2% | 0.35 | -56.8% | 100% |
+| R1: invested if tone > 0 | 8.0% | 10.8% | 0.54 | -16.0% | 55% |
+| R2: invested unless the model predicts a cut | 9.4% | 12.6% | 0.58 | -22.6% | 63% |
+
+  The rules mostly cut risk. Their return advantage is not statistically distinguishable from zero (block bootstrap 95% intervals include zero), it comes from avoiding the 2000--02 and 2008--09 drawdowns,
+  and they lag badly in bull markets (2009--2019: 6.6%/9.7% vs 12.3% for buy-and-hold). The S&P series is price-only (no dividends) so buy-and-hold is understated, and with three major drawdowns in the sample this is thin evidence.
+  This is a research exercise, not investment advice.
+
 ## Interactive dashboard
 
 Live at <https://jarreaubarron-coder.github.io/Beigebookanalysis/>.
